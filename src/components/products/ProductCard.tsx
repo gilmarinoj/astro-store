@@ -9,7 +9,7 @@ export const ProductCard = ({ product }: Props) => {
     const images = product.images.split(',').map(img => {
         return img.startsWith('http')
             ? img
-            : `${import.meta.env.PUBLIC_URL}/images/products/${img}`;
+            : `${import.meta.env.PUBLIC_URL}/public/images/products/${img}`;
     });
 
     const [currentImage, setCurrentImage] = useState(images[0]);
@@ -20,6 +20,8 @@ export const ProductCard = ({ product }: Props) => {
             src={currentImage} 
             alt={product.title}
             className="h-[350px] object-contain"
+            onMouseEnter= { () => setCurrentImage( images[1] ?? images[0] )}
+            onMouseLeave= { () => setCurrentImage( images[0] )}
             />
             <h4> {product.title} </h4>
             <p> ${product.price} </p>

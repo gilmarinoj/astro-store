@@ -1,4 +1,6 @@
 ---
+import { CartCounter } from "../cart/CartCounter";
+
 const { isLoggedIn, isAdmin } = Astro.locals;
 ---
 
@@ -8,10 +10,13 @@ const { isLoggedIn, isAdmin } = Astro.locals;
   style="background-color: #F9F9F9;"
 >
   <h1 class="text-xl text-gray-800 font-bold">
-    <a href="/">AstroStore</a>
+    <a href="/">TechUni</a>
   </h1>
   <div class="flex items-center">
     <ul class="flex items-center space-x-6">
+
+      <CartCounter client:load transition:persist />
+
       <li class="font-semibold text-gray-700">
         <a href="/">Home</a>
       </li>
