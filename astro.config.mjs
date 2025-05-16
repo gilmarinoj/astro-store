@@ -7,13 +7,14 @@ import tailwindcss from '@tailwindcss/vite';
 
 import netlify from '@astrojs/netlify';
 
-import db from '@astrojs/db';
 
 import react from '@astrojs/react';
 
+import db from '@astrojs/db';
+
 // https://astro.build/config
 export default defineConfig({
-  integrations: [auth(), db(), react()],
+  integrations: [auth(), react(), db()],
   output: 'server',
   vite: {
     plugins: [tailwindcss()]

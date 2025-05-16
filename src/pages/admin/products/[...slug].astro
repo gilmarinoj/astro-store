@@ -1,21 +1,22 @@
 ---
-import { getProductBySlug } from '@/actions/products/get-product-by-slug.action';
-import ProductImage from '@/components/products/ProductImage.astro';
-import ProductSlideshow from '@/components/products/ProductSlideshow.astro';
-import MainLayout from '@/layouts/MainLayout.astro';
+import { getProductBySlug } from "@/actions/products/get-product-by-slug.action";
+import ProductImage from "@/components/products/ProductImage.astro";
+import ProductSlideshow from "@/components/products/ProductSlideshow.astro";
+import MainLayout from "@/layouts/MainLayout.astro";
 
-import '@/styles/global.css';
+import "@/styles/global.css";
 
 const { slug } = Astro.params;
 
-const { data, error } = await Astro.callAction(getProductBySlug, (slug ?? ''));
+const { data, error } = await Astro.callAction(getProductBySlug, slug ?? "");
 
-if( error ) {
-    return Astro.redirect('/404')
+if (error) {
+  return Astro.redirect("/404");
 }
 
-const { product, images } = data
+const { product, images } = data;
 
+console.log(product);
 ---
 
 <MainLayout title="Mantenimiento de producto">
@@ -23,6 +24,8 @@ const { product, images } = data
   <a href="javascript:history.back()" class="text-blue-500">← Volver</a>
 
   <form class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <input type="hidden" name="id" value={product.id} />
+
     <!-- Datos generales -->
     <div class="mt-2">
       <h2 class="text-lg font-semibold">Datos generales</h2>
@@ -102,8 +105,7 @@ const { product, images } = data
           class="w-full p-2 border border-gray-300 rounded"
         />
       </div>
-      
-      
+
       <div class="grid grid-cols-2 gap-4">
         <!-- Gender -->
         <div class="mb-4">
@@ -114,7 +116,7 @@ const { product, images } = data
           >
             <option value="">[ Seleccione ]</option>
             {
-              ['men', 'women', 'unisex', 'kid'].map((gender) => (
+              ["men", "women", "unisex", "kid"].map((gender) => (
                 <option
                   value={gender}
                   class="capitalize"
@@ -133,7 +135,7 @@ const { product, images } = data
           <select class="w-full p-2 border border-gray-300 rounded" name="type">
             <option value="">[ Seleccione ]</option>
             {
-              ['shirts', 'shirt', 'pants', 'hats', 'hoodies'].map((type) => (
+              ["shirts", "shirt", "pants", "hats", "hoodies"].map((type) => (
                 <option
                   value={type}
                   class="capitalize"
@@ -152,8 +154,17 @@ const { product, images } = data
         <label for="sizes" class="block">Tallas</label>
         <div class="flex">
           {
-            ['XS', 'S', 'M', 'L', 'XL', 'XXL'].map((size) => (
-              <button class="btn-size">{size}</button>
+            ["XS", "S", "M", "L", "XL", "XXL"].map((size) => (
+              <button
+                type="button"
+                class="btn-size"
+                onclick="this.classList.toggle('active')"
+                class:list={
+                  product.sizes.split(",").includes(size) ? "active" : ""
+                }
+              >
+                {size}
+              </button>
             ))
           }
         </div>
@@ -164,14 +175,13 @@ const { product, images } = data
     <div>
       <!-- File upload -->
       <div class="mt-4">
-        
-         <!-- Guardar  -->
+        <!-- Guardar  -->
         <div class="flex justify-end">
           <button class="bg-blue-500 mb-5 p-2 rounded text-white"
             >Guardar producto</button
           >
         </div>
-        
+
         <!-- File input -->
         <div class="flex items-center justify-center w-full">
           <label
@@ -198,7 +208,7 @@ const { product, images } = data
                 <span class="font-semibold">Click aquí </span> o arrastra los archivos
               </p>
               <p class="text-xs text-gray-500">
-                SVG, PNG, JPG or GIF (max. 800x400px)
+                SVG, PNG, JPG, WEBP or JPEG (max. 800x400px)
               </p>
             </div>
 
@@ -215,7 +225,7 @@ const { product, images } = data
         </div>
 
         <!-- Slideshow -->
-        <ProductSlideshow images={images} />
+        <ProductSlideshow images={images.map((i) => i.image)} />
 
         <table class="w-full border">
           <thead>
@@ -226,8 +236,8 @@ const { product, images } = data
           </thead>
           <tbody>
             {
-              images.map((image) => (
-                <tr class="border">
+              images.map(({ image, id }) => (
+                <tr class="border" id={id}>
                   <td class="flex justify-center">
                     <ProductImage
                       src={image}
@@ -236,7 +246,9 @@ const { product, images } = data
                     />
                   </td>
                   <td class="text-center">
-                    <button class="btn-delete-image">X</button>
+                    <button data-id={id} class="btn-delete-image">
+                      X
+                    </button>
                   </td>
                 </tr>
               ))
@@ -248,11 +260,8 @@ const { product, images } = data
   </form>
 
   <style>
-  @import 'tailwindcss';
+    @import "tailwindcss";
 
-    h1 {
-        margin-top: 7rem;
-    }
     .btn-size,
     .btn-delete-image {
       @apply rounded border cursor-pointer border-gray-300 w-10 h-10 mr-4 hover:bg-blue-300 hover:text-white transition-all;
@@ -263,3 +272,46 @@ const { product, images } = data
     }
   </style>
 </MainLayout>
+
+<script>
+  import { actions } from "astro:actions";
+  import { navigate } from "astro:transitions/client";
+  import Swal from "sweetalert2";
+
+  document.addEventListener("astro:page-load", () => {
+    const form = document.querySelector("form") as HTMLFormElement;
+    const sizeButtons = document.querySelectorAll(".btn-size");
+
+    if (!form) {
+      return;
+    }
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const selectedSizes = Array.from(sizeButtons)
+        .filter((btn) => btn.classList.contains("active"))
+        .map((btn) => btn.textContent?.trim())
+        .join(",");
+
+      const formData = new FormData(form);
+      formData.set("sizes", selectedSizes);
+
+      const formValues = Object.fromEntries(formData.entries());
+
+      console.log(formValues);
+
+      const { data, error } = await actions.createUpdateProduct(formData);
+
+      if (error) {
+        Swal.fire({
+          icon: "error",
+          title: "Agrega una imagen e intentalo de nuevo!",
+        });
+        return;
+      }
+
+      navigate(`/admin/products/${data.slug}`);
+    });
+  });
+</script>

@@ -26,17 +26,24 @@ export const getProductsByPage = defineAction({
         const productsQuery = sql`
         SELECT a.*,
         ( SELECT GROUP_CONCAT(image, ',') FROM
-            ( SELECT * FROM ${ ProductImage } where productId = a.id limit 2 )
+            ( SELECT * FROM ${ProductImage} where productId = a.id limit 2 )
         ) as images
-        from ${ Product } a
-        LIMIT ${ limit } OFFSET ${ (page - 1 ) * limit};
+        from ${Product} a
+        LIMIT ${limit} OFFSET ${(page - 1) * limit};
         `;
 
         const { rows } = await db.run(productsQuery);
 
+        const products = rows.map(product => {
+            return {
+                ...product,
+                images: product.images ? product.images : 'no-image.png'
+            }
+        }) as unknown as ProductWithImages[];
+
         // const products = await db.select().from(Product).innerJoin( ProductImage, eq(Product.id, ProductImage.productId)).limit(limit).offset((page - 1) * 12);
         return {
-            products: rows as unknown as ProductWithImages[],
+            products: products, //rows as unknown as ProductWithImages[],
             totalPages: totalPages
         }
     },

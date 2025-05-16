@@ -22,85 +22,95 @@ const total = products.reduce(
 ---
 
 <MainLayout title="Carrito de compras">
-  <h1>Carrito</h1>
+  <div class="flex flex-col min-h-[calc(100vh-6rem)]">
+    <h1 class="text-3xl font-bold mb-8 text-gray-800">Carrito de Compras</h1>
 
-  <section class="grid grid-cols-1 sm:grid-cols-2">
-    <!-- Productos -->
-    <div class="order-2 sm:order-1">
-      <h2>Productos</h2>
-      <a
-        href="javascript:history.back()"
-        class="hover:underline text-blue-500 hover:text-blue-600">Regresar</a
-      >
+    <section class="grid grid-cols-1 sm:grid-cols-2 gap-8 flex-grow">
+      <!-- Productos -->
+      <div class="order-2 sm:order-1 bg-white p-6 rounded-lg shadow-lg">
+        <h2 class="text-xl font-semibold text-gray-700 mb-4">Productos en tu carrito</h2>
+        <a
+          href="javascript:history.back()"
+          class="hover:underline text-blue-500 hover:text-blue-600 mb-4 inline-block"
+        >
+          &larr; Regresar
+        </a>
 
-      {
-        products.map((product) => (
-          <div class="flex gap-5 mt-5">
-            <img src={product.image} alt={product.title} class="w-20 h-20" />
+        {products.length > 0 ? (
+          products.map((product) => (
+            <div class="flex gap-5 mt-5 border-b border-gray-200 pb-5">
+              <img
+                src={product.image}
+                alt={product.title}
+                class="w-24 h-24 object-cover rounded-lg shadow-md"
+              />
 
-            <div>
-              <a href={`/products/${product.slug}`} class="hover:underline">
-                {product.title}
-              </a>
-              <p class="font-extrabold">${product.price}</p>
-              <p>
-                Talla:
-                <span class="font-bold">{product.size}</span>
-              </p>
-              <p>
-                Cantidad:
-                <span class="font-bold">{product.quantity}</span>
-              </p>
-              <button
-                data-id={product.productId}
-                data-size={product.size}
-                class="text-red-500 btn-delete cursor-pointer hover:text-red-600"
-              >
-                Remover
-              </button>
+              <div class="flex flex-col justify-between">
+                <a
+                  href={`/products/${product.slug}`}
+                  class="text-lg font-semibold text-gray-800 hover:underline"
+                >
+                  {product.title}
+                </a>
+                <p class="text-gray-600 font-bold">${product.price}</p>
+                <p class="text-sm text-gray-500">
+                  Talla: <span class="font-semibold">{product.size}</span>
+                </p>
+                <p class="text-sm text-gray-500">
+                  Cantidad: <span class="font-semibold">{product.quantity}</span>
+                </p>
+                <button
+                  data-id={product.productId}
+                  data-size={product.size}
+                  class="text-red-500 btn-delete cursor-pointer hover:text-red-600 mt-2"
+                >
+                  Remover
+                </button>
+              </div>
             </div>
-          </div>
-        ))
-      }
-    </div>
-
-    <!-- Totales -->
-
-    <div class="bg-black h-[330px] text-white p-6 rounded-lg shadow-lg order-1">
-      <h2 class="text-lg font-semibold mb-4">Resumen de Compra</h2>
-
-      <div class="flex justify-between text-gray-400 mb-2">
-        <span>Envio</span>
-        <span>Gratis</span>
+          ))
+        ) : (
+          <p class="text-gray-500 mt-4">Tu carrito está vacío.</p>
+        )}
       </div>
 
-      <div class="flex justify-between text-gray-400 mb-4">
-        <span>SubTotal</span>
-        <span>{Formatter.currency(total)}</span>
-      </div>
+<!-- Totales -->
+<div class="bg-gray-800 text-white p-4 rounded-lg shadow-lg order-1 max-h-[50vh] self-start">
+  <h2 class="text-xl font-semibold mb-4">Resumen de Compra</h2>
 
-      <div class="flex justify-between text-gray-400 mb-4">
-        <span>Impuesto</span>
-        <span>{Formatter.currency(total * 0.15)}</span>
-      </div>
+  <div class="flex justify-between text-gray-400 mb-2">
+    <span>Envío</span>
+    <span>Gratis</span>
+  </div>
 
-      <div class="flex justify-between text-xl font-bold">
-        <span>Total</span>
-        <span>{Formatter.currency(total * 1.15)}</span>
-      </div>
+  <div class="flex justify-between text-gray-400 mb-2">
+    <span>Subtotal</span>
+    <span>{Formatter.currency(total)}</span>
+  </div>
 
-      <button
-        class="mt-10 w-full font-bold cursor-pointer hover:bg-blue-800 bg-blue-700 text-gray-300 py-3 rounded-lg hover:bg:gray-600 transition-all"
-      >
-        PAGAR
-      </button>
-    </div>
-  </section>
+  <div class="flex justify-between text-gray-400 mb-2">
+    <span>Impuesto</span>
+    <span>{Formatter.currency(total * 0.15)}</span>
+  </div>
+
+  <div class="flex justify-between text-xl font-bold mb-4">
+    <span>Total</span>
+    <span>{Formatter.currency(total * 1.15)}</span>
+  </div>
+
+  <button
+    class="cursor-pointer w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-bold transition-all"
+  >
+    Proceder al Pago
+  </button>
+</div>
+    </section>
+  </div>
 </MainLayout>
 
 <script>
   import { itemsInCart } from "@/store";
-import { CartCookiesClient } from "@/utils";
+  import { CartCookiesClient } from "@/utils";
   import { navigate } from "astro:transitions/client";
 
   document.addEventListener("astro:page-load", () => {
@@ -116,8 +126,6 @@ import { CartCookiesClient } from "@/utils";
         const cart = CartCookiesClient.removeItem(productId, size);
         itemsInCart.set(cart.length);
 
-        // TODO: temporal
-        // window.location.reload();
         navigate('/cart');
       });
     });

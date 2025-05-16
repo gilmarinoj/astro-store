@@ -8,35 +8,77 @@ const { isLoggedIn, isAdmin } = Astro.locals;
 
 <!-- component -->
 <nav
-  class="flex justify-between px-20 py-10 items-center fixed top-0 w-full z-10 h-20 backdrop-blur shadow-md"
+  class="flex justify-between px-8 py-4 items-center fixed top-0 w-full z-10 h-20 backdrop-blur-lg shadow-lg bg-white/80 border-b border-gray-200"
 >
-  <h1 class="text-xl text-gray-800 font-bold">
-    <a href="/">TechUni</a>
+  <!-- Logo -->
+  <h1 class="text-2xl text-gray-900 font-extrabold tracking-tight">
+    <a href="/" class="hover:text-blue-600 transition-colors">TechUni</a>
   </h1>
   <div class="flex items-center">
-    <ul class="flex items-center space-x-6">
-
+    <ul class="flex items-center space-x-8 text-gray-700 font-medium">
       <CartCounter client:load transition:persist />
+      
 
-      <li class="font-semibold text-gray-700">
-        <a href="/">Home</a>
+      <li>
+        <a href="/" class="hover:text-blue-600 transition-colors">Home</a>
       </li>
+
       {
         isAdmin && (
-          <li class="font-semibold text-gray-700">
-            <a href="/admin/dashboard">Admin</a>
+          <li>
+            <a
+              href="/admin/dashboard"
+              class="hover:text-blue-600 transition-colors"
+            >
+              Admin
+            </a>
           </li>
         )
       }
 
       {
         !isLoggedIn ? (
-          <li class="font-semibold text-gray-700">
-            <a href="/login">Ingresar</a>
+          <li>
+            <a href="/login" class="hover:text-blue-600 transition-colors">
+              Ingresar
+            </a>
           </li>
         ) : (
-          <li id="logout" class="font-semibold text-gray-700">
-            <a href="#">Salir</a>
+          <li class="relative">
+            <button
+              id="user-menu"
+              class="flex items-center space-x-2 hover:text-blue-600 transition-colors"
+            >
+              <span>Usuario</span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M19 9l-7 7-7-7"
+                />
+              </svg>
+            </button>
+            <ul
+              id="dropdown-menu"
+              class="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-md shadow-lg opacity-0 invisible transition-all"
+            >
+              <li>
+                <a
+                  href="#"
+                  id="logout"
+                  class="block px-4 py-2 hover:bg-gray-100 text-gray-700"
+                >
+                  Salir
+                </a>
+              </li>
+            </ul>
           </li>
         )
       }
@@ -45,15 +87,47 @@ const { isLoggedIn, isAdmin } = Astro.locals;
 </nav>
 
 <script>
+  document.addEventListener("astro:page-load", async () => {
+    const { signOut } = await import("auth-astro/client");
 
-  (async () => {
-    const { signOut } = await import('auth-astro/client');
+    const logoutElem = document.querySelector("#logout") as HTMLLIElement;
+    const userMenuButton = document.querySelector(
+      "#user-menu"
+    ) as HTMLButtonElement;
+    const dropdownMenu = document.querySelector(
+      "#dropdown-menu"
+    ) as HTMLUListElement;
 
-    const logoutElem = document.querySelector('#logout') as HTMLLIElement;
+    if (!userMenuButton || !dropdownMenu) {
+      console.error("No se encontraron los elementos del menú desplegable.");
+      return;
+    }
 
-    logoutElem?.addEventListener('click', async () => {
-      await signOut();
-      window.location.href = '/';
+    let isMenuOpen = false;
+
+    // Alternar visibilidad del menú
+    userMenuButton.addEventListener("click", () => {
+      isMenuOpen = !isMenuOpen;
+      dropdownMenu.style.opacity = isMenuOpen ? "1" : "0";
+      dropdownMenu.style.visibility = isMenuOpen ? "visible" : "hidden";
     });
-  })();
+
+    // Cerrar el menú al hacer clic fuera
+    document.addEventListener("click", (event) => {
+      if (
+        !userMenuButton.contains(event.target as Node) &&
+        !dropdownMenu.contains(event.target as Node)
+      ) {
+        isMenuOpen = false;
+        dropdownMenu.style.opacity = "0";
+        dropdownMenu.style.visibility = "hidden";
+      }
+    });
+
+    // Lógica de cierre de sesión
+    logoutElem?.addEventListener("click", async () => {
+      await signOut();
+      window.location.href = "/";
+    });
+  });
 </script>

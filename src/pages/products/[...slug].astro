@@ -19,39 +19,50 @@ const { product, images } = data;
 ---
 
 <MainLayout title={product.title} description={product.description}>
-  <!-- image={image} -->
-  <!-- <h1>{product.title}</h1> -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-8 p-6 bg-gray-50 rounded-lg shadow-lg">
+    <div class="bg-white rounded-lg shadow-md p-4">
+      <ProductSlideshow images={images.map( i => i.image )} />
+    </div>
 
-  <div class="grid grid-cols-1 md:grid-cols-3 w-full gap-4">
-    <ProductSlideshow images={images} />
-
-    <section>
-      <h2 class="text-2xl font-bold">{product.title}</h2>
-      <h2 class="font-bold">${product.price}</h2>
-
-      <h3 class="mt-5">Tallas</h3>
-      <ul class="flex gap-3">
-        {
-          product.sizes
-            .split(",")
-            .map((size) => <li data-size={size}>{size}</li>)
-        }
-      </ul>
-
-      <h3 class="mt-5">Cantidad</h3>
+    <section class="flex flex-col justify-between">
       <div>
-        <button class="btn-quantity">-</button>
-        <input type="number" min="1" value="1" />
-        <button class="btn-quantity">+</button>
+        <h2 class="text-3xl font-bold text-gray-800">{product.title}</h2>
+        <h3 class="text-xl font-semibold text-blue-600 mt-2">${product.price}</h3>
+
+        <h3 class="mt-6 text-lg font-semibold text-gray-700">Tallas</h3>
+        <ul class="flex gap-3 mt-2">
+          {
+            product.sizes
+              .split(",")
+              .map((size) => (
+                <li
+                  data-size={size}
+                  class="px-4 py-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-blue-100 transition-all"
+                >
+                  {size}
+                </li>
+              ))
+          }
+        </ul>
+
+        <h3 class="mt-6 text-lg font-semibold text-gray-700">Cantidad</h3>
+        <div class="flex items-center gap-4 mt-2">
+          <button class="btn-quantity">-</button>
+          <input type="number" min="1" value="1" class="quantity-input" />
+          <button class="btn-quantity">+</button>
+        </div>
+
+        <button
+          class="cursor-pointer mt-6 w-full bg-blue-500 text-white py-3 rounded-lg font-bold hover:bg-blue-600 transition-all disabled:bg-gray-400"
+        >
+          Añadir al carrito
+        </button>
       </div>
 
-      <button
-        class="rounded-lg mt-5 bg-blue-500 text-white p-3 w-full cursor-pointer hover:bg-blue-600 disabled:bg-gray-500"
-        >Añadir al carrito</button
-      >
-
-      <h3 class="mt-10">Descripción</h3>
-      <p>{product.description}</p>
+      <div class="mt-10">
+        <h3 class="text-lg font-semibold text-gray-700">Descripción</h3>
+        <p class="text-gray-600 mt-2">{product.description}</p>
+      </div>
     </section>
   </div>
 
@@ -74,28 +85,30 @@ const { product, images } = data;
       });
     });
 
-    const quantityInput = document.querySelector("input") as HTMLInputElement;
-    const productIdInput = document.querySelector(
-      "#product-id"
-    ) as HTMLInputElement;
+    const quantityInput = document.querySelector("input.quantity-input") as HTMLInputElement;
+    const productIdInput = document.querySelector("#product-id") as HTMLInputElement;
 
     let quantity = 1;
 
-    const [decrementButton, incrementButton, addToCartButton] =
-      document.querySelectorAll("button");
+    const decrementButton = document.querySelector("button.btn-quantity:first-of-type");
+    const incrementButton = document.querySelector("button.btn-quantity:last-of-type");
+    const addToCartButton = document.querySelector("button.cursor-pointer");
 
-    if (!incrementButton || !quantityInput) return;
+    if (!incrementButton || !quantityInput || !decrementButton || !addToCartButton) return;
 
+    // Incrementar cantidad
     incrementButton.addEventListener("click", () => {
       quantity = Math.min(quantity + 1, 5);
       quantityInput.value = quantity.toString();
     });
 
+    // Decrementar cantidad
     decrementButton.addEventListener("click", () => {
       quantity = Math.max(quantity - 1, 1);
       quantityInput.value = quantity.toString();
     });
 
+    // Añadir al carrito
     addToCartButton.addEventListener("click", async () => {
       const size = document.querySelector(".selected-size")?.textContent;
       if (!size) {
@@ -106,8 +119,6 @@ const { product, images } = data;
         return;
       }
 
-      addToCartButton.disabled = true;
-
       const cart = CartCookiesClient.addItem({
         productId: productIdInput.value,
         size: size,
@@ -116,8 +127,6 @@ const { product, images } = data;
 
       itemsInCart.set(cart.length);
 
-      // TODO: Cambiar luego cuando tengamos los viewTransitions
-      // window.location.href = '/cart';
       await navigate('/cart');
     });
   });
@@ -131,19 +140,19 @@ const { product, images } = data;
   }
 
   li {
-    @apply hover:underline cursor-pointer;
+    @apply hover:bg-blue-100 cursor-pointer px-4 py-2 border border-gray-300 rounded-lg transition-all;
   }
 
   .selected-size {
-    @apply text-blue-500 underline font-bold transition-all;
+    @apply bg-blue-500 text-white font-bold;
   }
 
   .btn-quantity {
-    @apply w-10 text-center p-2 border border-gray-300 hover:bg-gray-100 cursor-pointer;
+    @apply w-10 h-10 text-center p-2 border border-gray-300 rounded-lg hover:bg-gray-100 cursor-pointer transition-all;
   }
 
-  input {
-    @apply w-16 text-center p-2 border border-gray-300;
+  .quantity-input {
+    @apply w-16 text-center p-2 border border-gray-300 rounded-lg;
   }
 
   input[type="number"]::-webkit-outer-spin-button,

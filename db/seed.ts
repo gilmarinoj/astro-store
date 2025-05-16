@@ -1,4 +1,4 @@
-import { Role, User, db, Product, ProductImage } from 'astro:db';
+import { Role, User, Product, ProductImage, db } from 'astro:db';
 import { v4 as UUID } from 'uuid'
 import bcrypt from 'bcryptjs';
 import { seedProducts } from './seed-data';
