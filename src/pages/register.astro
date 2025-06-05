@@ -106,7 +106,7 @@ import AuthLayout from "../layouts/AuthLayout.astro"
       Swal.fire({
         icon: 'error',
         title: 'Credenciales no son correctas',
-        text: error.message,
+        text: 'Correo incorrecto / Contraseña mínimo 6 dígitos'
       });
       btnSubmit.removeAttribute('disabled');
       return;

@@ -53,6 +53,7 @@ export const createUpdateProduct = defineAction({
             user: user.id!,
             ...rest,
         };
+        console.log(product)
 
         const queries: any = [];
 
@@ -74,6 +75,7 @@ export const createUpdateProduct = defineAction({
                 form.imageFiles.map(file => ImageUpload.upload(file))
             );
             secureUrls.push(...urls);
+
         }
 
         secureUrls.forEach(imageUrl => {
@@ -92,6 +94,7 @@ export const createUpdateProduct = defineAction({
         // });
 
         await db.batch(queries);
+
 
         return product;
     }
